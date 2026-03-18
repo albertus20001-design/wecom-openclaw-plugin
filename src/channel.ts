@@ -95,14 +95,23 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
   },
   reload: {configPrefixes: [`channels.${CHANNEL_ID}`]},
   config: {
-    // 列出所有账户 ID（最小实现只支持默认账户）
-    listAccountIds: () => [DEFAULT_ACCOUNT_ID],
+    // 列出所有账户 ID（支持 channels.wecom.accounts 多账户模式）
+    listAccountIds: (cfg) => {
+      const wecomConfig = (cfg.channels?.[CHANNEL_ID] ?? {}) as WeComConfig;
+      const accountIds = wecomConfig.accounts && typeof wecomConfig.accounts === "object"
+        ? Object.keys(wecomConfig.accounts)
+        : [];
+      return accountIds.length > 0 ? accountIds : [DEFAULT_ACCOUNT_ID];
+    },
 
     // 解析账户配置
-    resolveAccount: (cfg) => resolveWeComAccount(cfg),
+    resolveAccount: (cfg, accountId) => resolveWeComAccount(cfg, accountId),
 
     // 获取默认账户 ID
-    defaultAccountId: () => DEFAULT_ACCOUNT_ID,
+    defaultAccountId: (cfg) => {
+      const wecomConfig = (cfg.channels?.[CHANNEL_ID] ?? {}) as WeComConfig;
+      return wecomConfig.defaultAccount ?? DEFAULT_ACCOUNT_ID;
+    },
 
     // 设置账户启用状态
     setAccountEnabled: ({cfg, enabled}) => {
