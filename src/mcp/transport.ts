@@ -10,12 +10,16 @@
  * - MCP 配置运行时缓存（通过 WSClient 拉取 URL 并缓存在内存中）
  */
 
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { generateReqId } from "@wecom/aibot-node-sdk";
 import { DEFAULT_ACCOUNT_ID } from "openclaw/plugin-sdk";
 import { getWeComWebSocket } from "../state-manager.js";
 import { MCP_GET_CONFIG_CMD, MCP_CONFIG_FETCH_TIMEOUT_MS } from "../const.js";
 import { withTimeout } from "../timeout.js";
 import { PLUGIN_VERSION } from "../version.js";
+import { CHANNEL_ID } from "../const.js";
 
 // ============================================================================
 // 类型定义
