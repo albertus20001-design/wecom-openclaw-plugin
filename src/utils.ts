@@ -58,18 +58,27 @@ export interface ResolvedWeComAccount {
 /**
  * 解析企业微信账户配置
  */
-export function resolveWeComAccount(cfg: OpenClawConfig): ResolvedWeComAccount {
+export function resolveWeComAccount(cfg: OpenClawConfig, requestedAccountId?: string): ResolvedWeComAccount {
   const wecomConfig = (cfg.channels?.[CHANNEL_ID] ?? {}) as WeComConfig;
+  const accounts = wecomConfig.accounts && typeof wecomConfig.accounts === "object"
+    ? wecomConfig.accounts
+    : undefined;
+  const defaultAccountId = wecomConfig.defaultAccount ?? DEFAULT_ACCOUNT_ID;
+  const accountId = requestedAccountId ?? defaultAccountId;
+  const accountConfig = accounts?.[accountId] ?? wecomConfig;
 
   return {
-    accountId: DEFAULT_ACCOUNT_ID,
-    name: wecomConfig.name ?? "企业微信",
-    enabled: wecomConfig.enabled ?? false,
-    websocketUrl: wecomConfig.websocketUrl || DefaultWsUrl,
-    botId: wecomConfig.botId ?? "",
-    secret: wecomConfig.secret ?? "",
-    sendThinkingMessage: wecomConfig.sendThinkingMessage ?? true,
-    config: wecomConfig,
+    accountId,
+    name: accountConfig.name ?? (accountId === DEFAULT_ACCOUNT_ID ? "企业微信" : accountId),
+    enabled: accountConfig.enabled ?? false,
+    websocketUrl: accountConfig.websocketUrl || wecomConfig.websocketUrl || DefaultWsUrl,
+    botId: accountConfig.botId ?? "",
+    secret: accountConfig.secret ?? "",
+    sendThinkingMessage: accountConfig.sendThinkingMessage ?? true,
+    config: {
+      ...wecomConfig,
+      ...accountConfig,
+    },
   };
 }
 
